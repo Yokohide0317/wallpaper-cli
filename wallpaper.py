@@ -1,40 +1,60 @@
-#import subprocess
 import os
 import argparse
 import shutil
 import pathlib
-import glob
+#from tabulate import tabulate
 
 # ~/.wallpaper
 save_dir = pathlib.Path(os.environ['HOME'], ".wallpaper")
 
+def init():
+    # ~/.wallpaperが無ければ作成
+    if not os.path.isdir(save_dir):
+        os.mkdir(save_dir)
+
+def list_wallpaper():
+    files = list(pathlib.Path(save_dir).glob("*"))
+    # 更新順でsort
+    files.sort(key=os.path.getmtime, reverse=True)
+    wallpapers = [str(x.name) for x in files if x.is_file()]
+    wallpapers = dict(zip(range(0, len(wallpapers)), wallpapers))
+
+    # ex: {0: 'kuusou-ressha.jpg', 1: 'ch4nge.JPG', 2: 'kitty_nya.png'}
+    return wallpapers
+
 # 画像を~/.wallpaper下へ
 def add_wallpaper(args):
-
     # 変更前と変更先のPathを確認して、取得
     def _set_path(_froml, _tol):
+        # --nameが指定されている場合
         if _tol != None:
             assert len(_froml) == len(_tol), "--nameの数が違います"
-            
+
             new_froml = []
             new_tol = []
             for f, t in zip(_froml, _tol):
-                assert pathlib.Path(f).exists(), f"{f}は存在しません。"
-                new_froml.append(pathlib.Path(f))
-                new_tol.append(save_dir / t)
+                f_path = pathlib.Path(f)
+
+                assert f_path.exists(), f"{f}は存在しません。"
+                new_froml.append(f_path)
+                # 拡張子が指定されていない場合や違う場合、変更前の拡張子をくっつける
+                if f_path.suffix == pathlib.Path(t):
+                    t_path = save_dir / pathlib.Path(t)
+                else:
+                    t_path = save_dir / pathlib.Path(t+f_path.suffix)
+                new_tol.append(t_path)
+
+        # --nameが指定されていない場合、名前も拡張子もそのまま
         else:
             new_froml = []
             new_tol = []
             for f in _froml:
-                assert pathlib.Path(f).exists(), f"{f}は存在しません。"
-                new_froml.append(pathlib.Path(f))
+                f_path = pathlib.Path(f)
+                assert f_path.exists(), f"{f}は存在しません。"
+                new_froml.append(f_path)
                 new_tol.append(save_dir)
         return new_froml, new_tol
-    
-    # ~/.wallpaperが無ければ作成
-    if not os.path.isdir(save_dir):
-        os.mkdir(save_dir)
-    
+
     # 呼び出し
     from_paths, to_paths = _set_path(args.img_path, args.name)
     for f, t in zip(from_paths, to_paths):
@@ -43,18 +63,28 @@ def add_wallpaper(args):
     return
 
 def change_wallpaper(args):
-    img_path = save_dir / pathlib.Path(args.img_name)
+    change_to = args.change_to
+    if change_to.isdigit():
+        wallpapers = list_wallpaper()
+        img_name = wallpapers[int(change_to)]
+    else:
+        img_name = str(change_to)
+    img_path = save_dir / pathlib.Path(img_name)
     assert img_path.exists(), f"存在しません: {str(img_path)}"
     cmd_img_path = '\"' + str(img_path) + '\"'
     cmd = f"osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file {cmd_img_path}'"
 
-    print(cmd)
     os.system(cmd)
     return
 
-def list_wallpaper(args):
-    files = [str(x.name) for x in save_dir.iterdir() if x.is_file()]
-    print(files)
+def show_list(args):
+    wallpapers = list_wallpaper()
+    #print(tabulate([wallpapers], headers='keys'))
+    print ("{:<4} {:<15}".format('ID','Name'))
+    print ("-------------------")
+    for key, value in wallpapers.items():
+        print("{:<4} {:<15}".format(key, value))
+    #print(wallpapers)
     return
 
 def command_help(args):
@@ -72,18 +102,20 @@ if __name__ == "__main__":
 
     # toコマンド
     parser_to = subparsers.add_parser('to', help='see `to -h`')
-    parser_to.add_argument("img_name")
+    parser_to.add_argument("change_to")
     parser_to.set_defaults(handler=change_wallpaper)
 
     # listコマンド
     parser_list = subparsers.add_parser('list', help='see `to -h`')
-    parser_list.set_defaults(handler=list_wallpaper)
+    parser_list.set_defaults(handler=show_list)
 
     # help
     parser_help = subparsers.add_parser('help', help='see `help -h`')
     parser_help.add_argument('command', help='command name which help is shown')
     parser_help.set_defaults(handler=command_help)
 
+
+    init()
     # コマンドライン引数をパースして対応するハンドラ関数を実行
     args = parser.parse_args()
     if hasattr(args, 'handler'):
