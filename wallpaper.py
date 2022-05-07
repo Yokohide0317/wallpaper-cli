@@ -15,7 +15,6 @@ def init():
 def list_wallpaper():
     files = list(pathlib.Path(save_dir).glob("*"))
     # 更新順でsort
-    #files.sort(key=os.path.getmtime, reverse=True)
     files.sort()
     wallpapers = [str(x.name) for x in files if x.is_file()]
     wallpapers = dict(zip(range(0, len(wallpapers)), wallpapers))
@@ -80,12 +79,10 @@ def change_wallpaper(args):
 
 def show_list(args):
     wallpapers = list_wallpaper()
-    #print(tabulate([wallpapers], headers='keys'))
     print ("{:<4} {:<15}".format('ID','Name'))
     print ("-------------------")
     for key, value in wallpapers.items():
         print("{:<4} {:<15}".format(key, value))
-    #print(wallpapers)
     return
 
 def command_help(args):
@@ -107,7 +104,7 @@ def main():
     parser_to.set_defaults(handler=change_wallpaper)
 
     # listコマンド
-    parser_list = subparsers.add_parser('list', help='see `to -h`')
+    parser_list = subparsers.add_parser('list', help='see `list -h`')
     parser_list.set_defaults(handler=show_list)
 
     # help
