@@ -29,4 +29,8 @@ or
 python wallpaper.py to [ID]
 ```
 
+## Develop
 
+```
+python setup.py develop
+```

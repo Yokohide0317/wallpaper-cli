@@ -1,8 +1,8 @@
+#!/usr/local/bin/python3
 import os
 import argparse
 import shutil
 import pathlib
-#from tabulate import tabulate
 
 # ~/.wallpaper
 save_dir = pathlib.Path(os.environ['HOME'], ".wallpaper")
@@ -15,7 +15,8 @@ def init():
 def list_wallpaper():
     files = list(pathlib.Path(save_dir).glob("*"))
     # 更新順でsort
-    files.sort(key=os.path.getmtime, reverse=True)
+    #files.sort(key=os.path.getmtime, reverse=True)
+    files.sort()
     wallpapers = [str(x.name) for x in files if x.is_file()]
     wallpapers = dict(zip(range(0, len(wallpapers)), wallpapers))
 
@@ -38,7 +39,7 @@ def add_wallpaper(args):
                 assert f_path.exists(), f"{f}は存在しません。"
                 new_froml.append(f_path)
                 # 拡張子が指定されていない場合や違う場合、変更前の拡張子をくっつける
-                if f_path.suffix == pathlib.Path(t):
+                if f_path.suffix == pathlib.Path(t).suffix:
                     t_path = save_dir / pathlib.Path(t)
                 else:
                     t_path = save_dir / pathlib.Path(t+f_path.suffix)
@@ -88,9 +89,9 @@ def show_list(args):
     return
 
 def command_help(args):
-    print(parser.parse_args([args.command, '--help']))
+    print([args.command, '--help'])
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="")
     subparsers = parser.add_subparsers()
 
@@ -123,3 +124,6 @@ if __name__ == "__main__":
     else:
         # 未知のサブコマンドの場合はヘルプを表示
         parser.print_help()
+
+if __name__ == "__main__":
+    main()
