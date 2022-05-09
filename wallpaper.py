@@ -73,7 +73,6 @@ def change_wallpaper(args):
     assert img_path.exists(), f"存在しません: {str(img_path)}"
     cmd_img_path = '\"' + str(img_path) + '\"'
     cmd = f"osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file {cmd_img_path}'"
-
     os.system(cmd)
     return
 

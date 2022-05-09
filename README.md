@@ -41,3 +41,11 @@ w-cli to [ID]
 python -m pip uninstall w-cli
 rm -r ~/.wallpaper
 ```
+
+
+# execution error: Not authorized to send Apple events to Finder. (-1743)
+
+System Preferences > Security & Privacy > Privacy Tab > Automation <br>
+
+Check `iTerm`, `Kitty` ... etc.
+
