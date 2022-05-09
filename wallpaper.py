@@ -85,6 +85,15 @@ def show_list(args):
         print("{:<4} {:<15}".format(key, value))
     return
 
+def open_img(args):
+    open_path = save_dir
+    if args.name != None:
+        open_path = open_path / pathlib.Path(args.name)
+
+    cmd = f"open {str(open_path)}"
+    os.system(cmd)
+    return
+
 def command_help(args):
     print([args.command, '--help'])
 
@@ -106,6 +115,11 @@ def main():
     # listコマンド
     parser_list = subparsers.add_parser('list', help='see `list -h`')
     parser_list.set_defaults(handler=show_list)
+
+    # showコマンド
+    parser_show = subparsers.add_parser('show', help='see `show -h`')
+    parser_show.add_argument("-n", "--name", default=None)
+    parser_show.set_defaults(handler=open_img)
 
     # help
     parser_help = subparsers.add_parser('help', help='see `help -h`')
